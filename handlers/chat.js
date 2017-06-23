@@ -1,39 +1,41 @@
 var Dota2 = require("../index"),
-    util = require("util");
+    util = require("util"),
+    Long = require("long");
 
 // Methods
-Dota2.Dota2Client.prototype._getChannelByName = function(channel_name, channel_type) {
+Dota2.Dota2Client.prototype._getChannelByName = function (channel_name, channel_type) {
     // Returns the channel corresponding to the given channel_name
     return this.chatChannels.filter(
-        function(item) {
-            if(channel_type >= 0)
+        function (item) {
+            if (channel_type >= 0)
                 return (item.channel_name === channel_name && item.channel_type === channel_type);
             else
                 return (item.channel_name === channel_name);
         }
     )[0];
-    
+
 }
 
-Dota2.Dota2Client.prototype._getChannelById = function(channel_id) {
+Dota2.Dota2Client.prototype._getChannelById = function (channel_id) {
     // Returns the channel corresponding to the given channel_id
-    return this.chatChannels.filter(
+    let channel = this.chatChannels.filter(
         // channel_id is a uint64 so it's mapped to a Long.js type
-        function(item) {
+        function (item) {
             return (item.channel_id.eq(channel_id));
         }
     )[0];
+    return channel ? channel : { channel_name: "Unknown", channel_id: Long.NEG_ONE, channel_type: Long.NEG_ONE, members: [] };
 }
 
-Dota2.Dota2Client.prototype._leaveChatChannelById = function(channelId) {
+Dota2.Dota2Client.prototype._leaveChatChannelById = function (channelId) {
     var payload = {
         "channel_id": channelId
     };
     //this.chatChannels = this.chatChannels.filter(item => item.channel_id.notEquals(channelId));
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCLeaveChatChannel, 
-                    Dota2.schema.lookupType("CMsgDOTALeaveChatChannel").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCLeaveChatChannel,
+        Dota2.schema.lookupType("CMsgDOTALeaveChatChannel").encode(payload).finish());
     this.Logger.debug("Leaving channel " + channelId);
-    
+
 };
 
 /**
@@ -44,18 +46,18 @@ Dota2.Dota2Client.prototype._leaveChatChannelById = function(channelId) {
  * @param {string} channel_name - Name of the chat channel
  * @param {DOTAChatChannelType_t} [channel_type=DOTAChatChannelType_t.DOTAChatChannelType_Custom] - The type of the channel being joined
  */
-Dota2.Dota2Client.prototype.joinChat = function(channel_name, channel_type) {
+Dota2.Dota2Client.prototype.joinChat = function (channel_name, channel_type) {
     channel_type = channel_type == null ? Dota2.schema.lookupEnum("DOTAChatChannelType_t").values.DOTAChannelType_Custom : channel_type;
 
     /* Attempts to join a chat channel.  Expect k_EMsgGCJoinChatChannelResponse from GC */
     this.Logger.debug("Joining chat channel: " + channel_name);
-    
+
     var payload = {
         "channel_name": channel_name,
         "channel_type": channel_type
     };
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCJoinChatChannel, 
-                    Dota2.schema.lookupType("CMsgDOTAJoinChatChannel").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCJoinChatChannel,
+        Dota2.schema.lookupType("CMsgDOTAJoinChatChannel").encode(payload).finish());
 };
 
 /**
@@ -66,7 +68,7 @@ Dota2.Dota2Client.prototype.joinChat = function(channel_name, channel_type) {
  * @param {string} channel_name - Name of the chat channel
  * @param {DOTAChatChannelType_t} [channel_type] - The type of the channel being joined
  */
-Dota2.Dota2Client.prototype.leaveChat = function(channel_name, channel_type) {
+Dota2.Dota2Client.prototype.leaveChat = function (channel_name, channel_type) {
     /* Attempts to leave a chat channel. GC does not send a response. */
     this.Logger.debug("Leaving chat channel: " + channel_name);
     // Clear cache
@@ -87,7 +89,7 @@ Dota2.Dota2Client.prototype.leaveChat = function(channel_name, channel_type) {
  * @param {string} channel_name - Name of the chat channel
  * @param {DOTAChatChannelType_t} [channel_type] - The type of the channel being joined
  */
-Dota2.Dota2Client.prototype.sendMessage = function(message, channel_name, channel_type) {
+Dota2.Dota2Client.prototype.sendMessage = function (message, channel_name, channel_type) {
     /* Attempts to send a message to a chat channel. GC does not send a response. */
     this.Logger.debug("Sending message to " + channel_name);
     // Check cache
@@ -96,13 +98,13 @@ Dota2.Dota2Client.prototype.sendMessage = function(message, channel_name, channe
         this.Logger.error("Cannot send message to a channel you have not joined.");
         return;
     }
-    
+
     var payload = {
         "channel_id": cache.channel_id,
         "text": message
     };
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage, 
-                    Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage,
+        Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
 };
 
 /**
@@ -112,7 +114,7 @@ Dota2.Dota2Client.prototype.sendMessage = function(message, channel_name, channe
  * @param {string} channel_name - Name of the chat channel
  * @param {DOTAChatChannelType_t} [channel_type] - The type of the channel being joined
  */
-Dota2.Dota2Client.prototype.shareLobby = function(channel_name, channel_type) {
+Dota2.Dota2Client.prototype.shareLobby = function (channel_name, channel_type) {
     /* Attempts to send a message to a chat channel. GC does not send a response. */
     this.Logger.debug("Sharing lobby to " + channel_name);
     // Check cache
@@ -125,14 +127,14 @@ Dota2.Dota2Client.prototype.shareLobby = function(channel_name, channel_type) {
         this.Logger.error("Cannot share a lobby when you're not in one.");
         return;
     }
-    
+
     var payload = {
         "channel_id": cache.channel_id,
         "share_lobby_id": this.Lobby.lobby_id,
         "share_lobby_passkey": this.Lobby.pass_key
     };
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage, 
-                    Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage,
+        Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
 };
 
 /**
@@ -143,7 +145,7 @@ Dota2.Dota2Client.prototype.shareLobby = function(channel_name, channel_type) {
  * @param {string} channel_name - Name of the chat channel
  * @param {DOTAChatChannelType_t} [channel_type] - The type of the channel being joined
  */
-Dota2.Dota2Client.prototype.flipCoin = function(channel_name, channel_type) {
+Dota2.Dota2Client.prototype.flipCoin = function (channel_name, channel_type) {
     /* Attempts to send a coin flip to a chat channel. Expect a chatmessage in response. */
     this.Logger.debug("Sending coin flip to " + channel_name);
     // Check cache
@@ -152,13 +154,13 @@ Dota2.Dota2Client.prototype.flipCoin = function(channel_name, channel_type) {
         this.Logger.error("Cannot send message to a channel you have not joined.");
         return;
     }
-    
+
     var payload = {
         "channel_id": cache.channel_id,
         "coin_flip": true
     };
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage, 
-                    Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage,
+        Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
 };
 
 /**
@@ -171,7 +173,7 @@ Dota2.Dota2Client.prototype.flipCoin = function(channel_name, channel_type) {
  * @param {string} channel_name - Name of the chat channel
  * @param {DOTAChatChannelType_t} [channel_type] - The type of the channel being joined
  */
-Dota2.Dota2Client.prototype.rollDice = function(min, max, channel_name, channel_type) {
+Dota2.Dota2Client.prototype.rollDice = function (min, max, channel_name, channel_type) {
     /* Attempts to send a dice roll to a chat channel. Expect a chatmessage in response. */
     this.Logger.debug("Sending dice roll to " + channel_name);
     // Check cache
@@ -180,7 +182,7 @@ Dota2.Dota2Client.prototype.rollDice = function(min, max, channel_name, channel_
         this.Logger.error("Cannot send message to a channel you have not joined.");
         return;
     }
-    
+
     var payload = {
         "channel_id": cache.channel_id,
         "dice_roll": {
@@ -188,8 +190,8 @@ Dota2.Dota2Client.prototype.rollDice = function(min, max, channel_name, channel_
             "roll_max": max
         }
     };
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage, 
-                    Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCChatMessage,
+        Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
 };
 
 /**
@@ -197,13 +199,13 @@ Dota2.Dota2Client.prototype.rollDice = function(min, max, channel_name, channel_
  * Requires the GC to be {@link module:Dota2.Dota2Client#event:ready|ready}.
  * @alias module:Dota2.Dota2Client#requestChatChannels
  */
-Dota2.Dota2Client.prototype.requestChatChannels = function() {
+Dota2.Dota2Client.prototype.requestChatChannels = function () {
     /* Requests a list of chat channels from the GC. */
     this.Logger.debug("Requesting channel list");
-    
+
     var payload = {};
-    this.sendToGC(  Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCRequestChatChannelList, 
-                    Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
+    this.sendToGC(Dota2.schema.lookupEnum("EDOTAGCMsg").values.k_EMsgGCRequestChatChannelList,
+        Dota2.schema.lookupType("CMsgDOTAChatMessage").encode(payload).finish());
 };
 
 // Events

@@ -377,6 +377,8 @@ The lobby the bot is currently in. Falsy if the bot isn't in a lobby.
 | allchat | <code>boolean</code> | <code>false</code> | Whether or not it's allowed to all-chat |
 | dota_tv_delay | <code>LobbyDotaTVDelay</code> | <code>LobbyDotaTV_120</code> | How much time the game should be delayed for DotaTV. |
 | leagueid | <code>number</code> |  | The league this lobby is being created for. The bot should be a league admin for this to work. |
+| penalty_level_radiant | <code>number</code> |  | Draft time penalty level for radiant. |
+| penalty_level_dire | <code>number</code> |  | Draft time penalty level for dire. |
 | custom_game_mode | <code>string</code> |  | Name of the custom game |
 | custom_map_name | <code>string</code> |  | Which map the custom game should be played on |
 | custom_difficulty | <code>number</code> |  | Difficulty of the custom game |
