@@ -27,7 +27,13 @@ Dota2._lobbyOptions = {
     custom_difficulty: "number",
     custom_game_id: "number",
     penalty_level_radiant: "number",
-    penalty_level_dire: "number"
+    penalty_level_dire: "number",
+    selection_priority_rules: "number",
+    series_previous_selection_priority_team_id: "number",
+    series_current_selection_priority_team_id: "number",
+    series_current_priority_team_choice: "number",
+    series_current_non_priority_team_choice: "number",
+    series_current_selection_priority_used_coin_toss: "boolean"
 };
 
 /**
@@ -126,6 +132,12 @@ Dota2.Dota2Client.prototype.createPracticeLobby = function (options, callback) {
         custom_game_id: 0,
         penalty_level_radiant: 0,
         penalty_level_dire: 0,
+        selection_priority_rules: Dota2.schema.lookupEnum("DOTASelectionPriorityRules").values.k_DOTASelectionPriorityRules_Manual,
+        series_previous_selection_priority_team_id: 0,
+        series_current_selection_priority_team_id: 0,
+        series_current_priority_team_choice: Dota2.schema.lookupEnum("DOTASelectionPriorityChoice").values.k_DOTASelectionPriorityChoice_Invalid,
+        series_current_non_priority_team_choice: Dota2.schema.lookupEnum("DOTASelectionPriorityChoice").values.k_DOTASelectionPriorityChoice_Invalid,
+        series_current_selection_priority_used_coin_toss: false,
     };
     var finalOptions = Object.assign(defaults, options);
 
