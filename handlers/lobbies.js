@@ -28,6 +28,7 @@ Dota2._lobbyOptions = {
     custom_game_id: "number",
     penalty_level_radiant: "number",
     penalty_level_dire: "number",
+    pause_setting: "number",
     selection_priority_rules: "number",
     series_previous_selection_priority_team_id: "number",
     series_current_selection_priority_team_id: "number",
