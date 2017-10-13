@@ -1499,8 +1499,9 @@ message CMsgPlayerConductScorecard {
 	optional uint32 reports_count = 9;
 	optional uint32 reports_parties = 10;
 	optional uint32 commend_count = 11;
-	optional uint32 end_score = 13;
 	optional uint32 date = 14;
+	optional uint32 behavior_grade = 15;
+	optional uint32 old_behavior_grade = 16;
 }
 
 message CMsgClientToGCWageringRequest {
